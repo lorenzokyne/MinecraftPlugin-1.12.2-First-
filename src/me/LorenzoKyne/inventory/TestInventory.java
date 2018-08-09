@@ -28,13 +28,7 @@ import me.LorenzoKyne.money.TestMoney;
 
 public class TestInventory extends JavaPlugin implements Listener {
 
-	/**
-	 * Hash map which contains items and relative prices and sold and bought
-	 * quantities.
-	 */
-	private static ConcurrentHashMap<String, priceBuySell> items = new ConcurrentHashMap<String, priceBuySell>();
-
-	private class priceBuySell implements Serializable {
+	class priceBuySell implements Serializable {
 		int price;
 		int bought;
 		int sold;
@@ -80,7 +74,17 @@ public class TestInventory extends JavaPlugin implements Listener {
 		public void incrementSold() {
 			sold++;
 		}
+
+		public String toString() {
+			return String.valueOf(price);
+		}
 	}
+
+	/**
+	 * Hash map which contains items and relative prices and sold and bought
+	 * quantities.
+	 */
+	private static ConcurrentHashMap<String, priceBuySell> items = new ConcurrentHashMap<String, priceBuySell>();
 
 	private static List<Integer> quantities = new ArrayList<Integer>();
 	/**
@@ -162,18 +166,20 @@ public class TestInventory extends JavaPlugin implements Listener {
 	public static void sell(Player p, Material it) {
 		if (p.getInventory().containsAtLeast(new ItemStack(it), 1)) {
 			p.getInventory().removeItem(new ItemStack(it, 1));
-			TestMoney.receive(p, items.get(it.name()));
+			TestMoney.receive(p, items.get(it.name()).getPrice());
 			p.sendMessage(ChatColor.GREEN + "Hai ricevuto " + items.get(it.name()) + "euro per aver venduto 1x "
 					+ it.name() + "!");
+			items.get(it.name()).incrementSold();
 		} else {
 			p.sendMessage(ChatColor.DARK_RED + "Non hai abbastanza " + it.name());
 		}
 	}
 
 	public static void buy(Player p, Material it) {
-		if (TestMoney.pay(p, items.get(it.name()))) {
+		if (TestMoney.pay(p, items.get(it.name()).getPrice())) {
 			p.sendMessage(ChatColor.RED + "Hai pagato " + items.get(it.name()) + "euro per aver comprato 1x "
 					+ it.name() + "!");
+			items.get(it.name()).incrementBought();
 			p.getInventory().addItem(new ItemStack(it, 1));
 		}
 	}
@@ -209,6 +215,13 @@ public class TestInventory extends JavaPlugin implements Listener {
 			Player p = (Player) sender;
 			if (cmd.getName().equalsIgnoreCase("shop")) {
 				p.openInventory(myInventory);
+				return true;
+			} else if (cmd.getName().equalsIgnoreCase("prices")) {
+				p.sendMessage("Current prices: \n" + items.toString());
+				return true;
+			} else if (cmd.getName().equalsIgnoreCase("quantities")) {
+				p.sendMessage("Quantities: \nSold: " + " Bought: ");
+				return true;
 			}
 		}
 		return false;
