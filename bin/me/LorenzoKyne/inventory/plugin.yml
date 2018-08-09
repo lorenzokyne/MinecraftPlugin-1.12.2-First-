@@ -7,3 +7,9 @@ commands:
   shop:
     description: Apre la GUI dello shop.
     usage: /<command>
+  prices:
+    description: Shows current prices.
+    usage: /<command>
+  quantities:
+    description: Shows current sold and bought quantities.
+    usage: /<command>

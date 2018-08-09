@@ -26,59 +26,59 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import me.LorenzoKyne.money.TestMoney;
 
-public class TestInventory extends JavaPlugin implements Listener {
+class priceBuySell implements Serializable {
+	int price;
+	int bought;
+	int sold;
 
-	class priceBuySell implements Serializable {
-		int price;
-		int bought;
-		int sold;
-
-		public priceBuySell(int price) {
-			this.price = price;
-		}
-
-		public priceBuySell(int price, int bought, int sold) {
-			this.price = price;
-			this.bought = bought;
-			this.sold = sold;
-		}
-
-		public int getPrice() {
-			return price;
-		}
-
-		public int getBought() {
-			return bought;
-		}
-
-		public int getSold() {
-			return sold;
-		}
-
-		public void setPrice(int price) {
-			this.price = price;
-		}
-
-		public void setBought(int bought) {
-			this.bought = bought;
-		}
-
-		public void setSold(int sold) {
-			this.sold = sold;
-		}
-
-		public void incrementBought() {
-			bought++;
-		}
-
-		public void incrementSold() {
-			sold++;
-		}
-
-		public String toString() {
-			return String.valueOf(price);
-		}
+	public priceBuySell(int price) {
+		this.price = price;
 	}
+
+	public priceBuySell(int price, int bought, int sold) {
+		this.price = price;
+		this.bought = bought;
+		this.sold = sold;
+	}
+
+	public int getPrice() {
+		return price;
+	}
+
+	public int getBought() {
+		return bought;
+	}
+
+	public int getSold() {
+		return sold;
+	}
+
+	public void setPrice(int price) {
+		this.price = price;
+	}
+
+	public void setBought(int bought) {
+		this.bought = bought;
+	}
+
+	public void setSold(int sold) {
+		this.sold = sold;
+	}
+
+	public void incrementBought() {
+		bought++;
+	}
+
+	public void incrementSold() {
+		sold++;
+	}
+
+	public String toString() {
+		return "Price: " + price;
+	}
+}
+
+public class TestInventory extends JavaPlugin implements Listener, Serializable {
 
 	/**
 	 * Hash map which contains items and relative prices and sold and bought
@@ -123,6 +123,7 @@ public class TestInventory extends JavaPlugin implements Listener {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		updatePrices();
 		Bukkit.getServer().getPluginManager().registerEvents(this, this);
 		getLogger().info("ShopInventory plugin loaded!");
 	}
@@ -167,9 +168,10 @@ public class TestInventory extends JavaPlugin implements Listener {
 		if (p.getInventory().containsAtLeast(new ItemStack(it), 1)) {
 			p.getInventory().removeItem(new ItemStack(it, 1));
 			TestMoney.receive(p, items.get(it.name()).getPrice());
-			p.sendMessage(ChatColor.GREEN + "Hai ricevuto " + items.get(it.name()) + "euro per aver venduto 1x "
-					+ it.name() + "!");
-			items.get(it.name()).incrementSold();
+			p.sendMessage(ChatColor.GREEN + "Hai ricevuto " + items.get(it.name()).getPrice()
+					+ "euro per aver venduto 1x " + it.name() + "!");
+			items.put(it.name(), new priceBuySell(items.get(it.name()).getPrice(), items.get(it.name()).getBought(),
+					items.get(it.name()).getSold() + 1));
 		} else {
 			p.sendMessage(ChatColor.DARK_RED + "Non hai abbastanza " + it.name());
 		}
@@ -177,9 +179,10 @@ public class TestInventory extends JavaPlugin implements Listener {
 
 	public static void buy(Player p, Material it) {
 		if (TestMoney.pay(p, items.get(it.name()).getPrice())) {
-			p.sendMessage(ChatColor.RED + "Hai pagato " + items.get(it.name()) + "euro per aver comprato 1x "
+			p.sendMessage(ChatColor.RED + "Hai pagato " + items.get(it.name()).getPrice() + "euro per aver comprato 1x "
 					+ it.name() + "!");
-			items.get(it.name()).incrementBought();
+			items.put(it.name(), new priceBuySell(items.get(it.name()).getPrice(), items.get(it.name()).getBought() + 1,
+					items.get(it.name()).getSold()));
 			p.getInventory().addItem(new ItemStack(it, 1));
 		}
 	}
@@ -200,13 +203,19 @@ public class TestInventory extends JavaPlugin implements Listener {
 
 	public void updatePrices() {
 		Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
-
 			@Override
 			public void run() {
-
+				for (priceBuySell temp : items.values()) {
+					if (temp.getBought() > temp.getSold()) {
+						temp.setPrice(temp.getPrice() + (temp.getPrice() * 20 / 100));
+					} else if (temp.getBought() < temp.getSold()) {
+						temp.setPrice(temp.getPrice() - (temp.getPrice() * 20 / 100));
+					}
+				}
 			}
 
-		}, 0, 20 * 86400);// every day prices will update
+		}, 0, 20 * 60);// 20 * 86400 - every day prices will update
+		changed = true;
 	}
 
 	@Override
@@ -220,11 +229,11 @@ public class TestInventory extends JavaPlugin implements Listener {
 				p.sendMessage("Current prices: \n" + items.toString());
 				return true;
 			} else if (cmd.getName().equalsIgnoreCase("quantities")) {
-				p.sendMessage("Quantities: \nSold: " + " Bought: ");
+				p.sendMessage("Quantities: \n" + "Bought: " + items.get("DIAMOND").getBought() + " Sold: "
+						+ items.get("DIAMOND").getSold());
 				return true;
 			}
 		}
 		return false;
 	}
-
 }
