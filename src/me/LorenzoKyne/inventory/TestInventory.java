@@ -138,6 +138,17 @@ public class TestInventory extends JavaPlugin implements Listener {
 		items.put(Material.GOLD_INGOT.name(), 800);
 	}
 
+	public void updatePrices() {
+		Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
+
+			@Override
+			public void run() {
+				
+			}
+
+		}, 0, 20 * 86400);// every day prices will update
+	}
+
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (sender instanceof Player) {
