@@ -19,6 +19,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class TestMoney extends JavaPlugin implements Listener {
 
+	/**
+	 * Hash map which contains players and their relative money.
+	 */
 	private static ConcurrentHashMap<String, Integer> players = new ConcurrentHashMap<String, Integer>();
 
 	@Override
@@ -72,9 +75,9 @@ public class TestMoney extends JavaPlugin implements Listener {
 					int amount = Integer.parseInt(args[1]);
 					Player receiver = getServer().getPlayer(receiverName);
 					if (receiver != null && receiver.isOnline()) {
-						if (paga(player, amount)) {
+						if (pay(player, amount)) {
 							player.sendMessage(ChatColor.RED + "Hai inviato " + amount + " euro a " + receiverName);
-							ricevi(receiver, amount);
+							receive(receiver, amount);
 							receiver.sendMessage(ChatColor.DARK_GREEN + "Hai ricevuto " + amount + " euro da "
 									+ player.getDisplayName());
 						}
@@ -92,7 +95,7 @@ public class TestMoney extends JavaPlugin implements Listener {
 		return false;
 	};
 
-	public static boolean paga(Player p, int amount) {
+	public static boolean pay(Player p, int amount) {
 		int initial = players.get(p.getDisplayName());
 		if (initial - amount >= 0) {
 			players.put(p.getDisplayName(), initial - amount);
@@ -103,7 +106,7 @@ public class TestMoney extends JavaPlugin implements Listener {
 		}
 	}
 
-	public static void ricevi(Player p, int amount) {
+	public static void receive(Player p, int amount) {
 		int initialReceiver = players.get(p.getDisplayName());
 		players.put(p.getDisplayName(), initialReceiver + amount);
 	}

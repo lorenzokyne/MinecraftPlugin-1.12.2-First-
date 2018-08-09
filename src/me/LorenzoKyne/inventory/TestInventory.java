@@ -26,12 +26,11 @@ import me.LorenzoKyne.money.TestMoney;
 public class TestInventory extends JavaPlugin implements Listener {
 
 	/**
-	 * Hash map contenente gli item e i relativi prezzi.
+	 * Hash map which contains items and relative prices.
 	 */
 	private static ConcurrentHashMap<String, Integer> items = new ConcurrentHashMap<String, Integer>();
 	/**
-	 * flag che indica se i prezzi sono in qualche modo variati, serve a capire se
-	 * salvare le modifiche o meno.
+	 * Flag that indicate if prices have changed, if so changes will be saved.
 	 */
 	private static boolean changed = false;
 
@@ -43,6 +42,7 @@ public class TestInventory extends JavaPlugin implements Listener {
 	// The third parameter, is the inventory name. This will accept chat colors.
 
 	static {
+		// The first parameter, is the slot that is assigned to. Starts counting at 0
 		myInventory.setItem(0, new ItemStack(Material.DIAMOND, 1));
 		myInventory.setItem(1, new ItemStack(Material.REDSTONE, 1));
 		myInventory.setItem(2, new ItemStack(Material.LAPIS_BLOCK, 1));
@@ -50,8 +50,6 @@ public class TestInventory extends JavaPlugin implements Listener {
 		myInventory.setItem(6, new ItemStack(Material.LOG, 1));
 		myInventory.setItem(7, new ItemStack(Material.GOLD_INGOT, 1));
 		myInventory.setItem(8, new ItemStack(Material.COAL, 1));
-
-		// The first parameter, is the slot that is assigned to. Starts counting at 0
 	}
 
 	public void onEnable() {
@@ -61,7 +59,7 @@ public class TestInventory extends JavaPlugin implements Listener {
 			items = (ConcurrentHashMap<String, Integer>) in.readObject();
 			in.close();
 		} catch (IOException e) {
-			inizializzaPrezzi();
+			initializePrices();
 			changed = true;
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -110,7 +108,7 @@ public class TestInventory extends JavaPlugin implements Listener {
 	public static void sell(Player p, Material it) {
 		if (p.getInventory().containsAtLeast(new ItemStack(it), 1)) {
 			p.getInventory().removeItem(new ItemStack(it, 1));
-			TestMoney.ricevi(p, items.get(it.name()));
+			TestMoney.receive(p, items.get(it.name()));
 			p.sendMessage(ChatColor.GREEN + "Hai ricevuto " + items.get(it.name()) + "euro per aver venduto 1x "
 					+ it.name() + "!");
 		} else {
@@ -119,7 +117,7 @@ public class TestInventory extends JavaPlugin implements Listener {
 	}
 
 	public static void buy(Player p, Material it) {
-		if (TestMoney.paga(p, items.get(it.name()))) {
+		if (TestMoney.pay(p, items.get(it.name()))) {
 			p.sendMessage(ChatColor.RED + "Hai pagato " + items.get(it.name()) + "euro per aver comprato 1x "
 					+ it.name() + "!");
 			p.getInventory().addItem(new ItemStack(it, 1));
@@ -130,7 +128,7 @@ public class TestInventory extends JavaPlugin implements Listener {
 		return items;
 	}
 
-	public void inizializzaPrezzi() {
+	public void initializePrices() {
 		items.put(Material.DIAMOND.name(), 1000);
 		items.put(Material.IRON_INGOT.name(), 500);
 		items.put(Material.COAL.name(), 200);

@@ -91,8 +91,4 @@ public class TestingScoreboard extends JavaPlugin implements Listener {
 	public int getPing(Player p) {
 		return (int) ((CraftPlayer) p).getHandle().ping;
 	}
-
-	public void displayTime(int display, String what) {
-
-	}
 }
