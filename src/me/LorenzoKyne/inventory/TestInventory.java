@@ -5,6 +5,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Bukkit;
@@ -26,15 +29,66 @@ import me.LorenzoKyne.money.TestMoney;
 public class TestInventory extends JavaPlugin implements Listener {
 
 	/**
-	 * Hash map which contains items and relative prices.
+	 * Hash map which contains items and relative prices and sold and bought
+	 * quantities.
 	 */
-	private static ConcurrentHashMap<String, Integer> items = new ConcurrentHashMap<String, Integer>();
+	private static ConcurrentHashMap<String, priceBuySell> items = new ConcurrentHashMap<String, priceBuySell>();
+
+	private class priceBuySell implements Serializable {
+		int price;
+		int bought;
+		int sold;
+
+		public priceBuySell(int price) {
+			this.price = price;
+		}
+
+		public priceBuySell(int price, int bought, int sold) {
+			this.price = price;
+			this.bought = bought;
+			this.sold = sold;
+		}
+
+		public int getPrice() {
+			return price;
+		}
+
+		public int getBought() {
+			return bought;
+		}
+
+		public int getSold() {
+			return sold;
+		}
+
+		public void setPrice(int price) {
+			this.price = price;
+		}
+
+		public void setBought(int bought) {
+			this.bought = bought;
+		}
+
+		public void setSold(int sold) {
+			this.sold = sold;
+		}
+
+		public void incrementBought() {
+			bought++;
+		}
+
+		public void incrementSold() {
+			sold++;
+		}
+	}
+
+	private static List<Integer> quantities = new ArrayList<Integer>();
 	/**
 	 * Flag that indicate if prices have changed, if so changes will be saved.
 	 */
 	private static boolean changed = false;
 
-	public static Inventory myInventory = Bukkit.createInventory(null, 9, "My custom Inventory!");
+	public static Inventory myInventory = Bukkit.createInventory(null, 9, "Welcome to the shop!");
 	// The first parameter, is the inventory owner. I make it null to let everyone
 	// use it.
 	// The second parameter, is the slots in a inventory. Must be a multiple of 9.
@@ -56,7 +110,7 @@ public class TestInventory extends JavaPlugin implements Listener {
 		try {
 			FileInputStream inFile = new FileInputStream("prices.dat");
 			ObjectInputStream in = new ObjectInputStream(inFile);
-			items = (ConcurrentHashMap<String, Integer>) in.readObject();
+			items = (ConcurrentHashMap<String, priceBuySell>) in.readObject();
 			in.close();
 		} catch (IOException e) {
 			initializePrices();
@@ -124,18 +178,18 @@ public class TestInventory extends JavaPlugin implements Listener {
 		}
 	}
 
-	public static ConcurrentHashMap<String, Integer> getItems() {
+	public static ConcurrentHashMap<String, priceBuySell> getItems() {
 		return items;
 	}
 
 	public void initializePrices() {
-		items.put(Material.DIAMOND.name(), 1000);
-		items.put(Material.IRON_INGOT.name(), 500);
-		items.put(Material.COAL.name(), 200);
-		items.put(Material.LAPIS_BLOCK.name(), 1000);
-		items.put(Material.REDSTONE.name(), 100);
-		items.put(Material.LOG.name(), 200);
-		items.put(Material.GOLD_INGOT.name(), 800);
+		items.put(Material.DIAMOND.name(), new priceBuySell(1000));
+		items.put(Material.IRON_INGOT.name(), new priceBuySell(500));
+		items.put(Material.COAL.name(), new priceBuySell(200));
+		items.put(Material.LAPIS_BLOCK.name(), new priceBuySell(1000));
+		items.put(Material.REDSTONE.name(), new priceBuySell(100));
+		items.put(Material.LOG.name(), new priceBuySell(200));
+		items.put(Material.GOLD_INGOT.name(), new priceBuySell(800));
 	}
 
 	public void updatePrices() {
@@ -143,7 +197,7 @@ public class TestInventory extends JavaPlugin implements Listener {
 
 			@Override
 			public void run() {
-				
+
 			}
 
 		}, 0, 20 * 86400);// every day prices will update
