@@ -1,0 +1,15 @@
+name: money
+main: me.LorenzoKyne.money.TestMoney
+author: LorenzoKyne
+version: 1.0
+description: Plugin di test della gestione soldi.
+commands:
+  money:
+    description: Visualizza il tuo gruzzoletto.
+    usage: /<command>
+  pay:
+    description: Paga un giocatore.
+    usage: /<command> <player> <ammontare>
+  shopdiamante:
+    description: Paga 1 diamante.
+    usage: /<command>

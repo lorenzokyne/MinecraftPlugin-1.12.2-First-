@@ -1,0 +1,9 @@
+name: inventory
+main: me.LorenzoKyne.inventory.TestInventory
+author: LorenzoKyne
+version: 1.0
+description: Plugin di test dell'inventario responsive.
+commands:
+  shop:
+    description: Apre la GUI dello shop.
+    usage: /<command>
